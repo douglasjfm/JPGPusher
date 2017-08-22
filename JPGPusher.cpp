@@ -231,8 +231,8 @@ void JPGPusher::handleSid(std::string sid, int sockcli)
 		//if not streaming then begin to
 		ssn->sockcli = sockcli;
 		ssn->state = STREAMING;
-		ssn->worker = std::thread(JPG_stream2Client, ssn->sockcli, &(ssn->state), &(ssn->frames));
-		ssn->worker.detach();
+		std::thread worker(JPG_stream2Client, ssn->sockcli, &(ssn->state), &(ssn->frames));
+		worker.detach();
 		printf("Restream %s\n",sid.c_str());
 	}
 	else//invalid sid
