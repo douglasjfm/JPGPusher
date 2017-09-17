@@ -2,11 +2,10 @@
  * CV_JPGPusher.cpp
  *
  *  Created on: 12/08/2017
- *      Author: douglas
+ *      Author: douglasjfm
  */
 
 #include "JPGPusher.h"
-
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -26,8 +25,8 @@ JPGPusher::~JPGPusher() {
 void JPG_stream2Client(int clisock, states *state, int *frames)
 {
 	unsigned char *jpg;
-	char cabhttp[500];
-	char resp[600000];//This buffer must be adjusted for the size of the jpg frames
+	char cabhttp[1000];
+	char resp[91500];//This buffer must be adjusted for the size of the jpg frames
 	unsigned jpglen, resplen;
 
 	strcpy(cabhttp,"HTTP/1.0 200 OK\r\n");
@@ -37,14 +36,10 @@ void JPG_stream2Client(int clisock, states *state, int *frames)
 	strcat(cabhttp,"Content-Type: multipart/x-mixed-replace;boundary=--myboundary\r\n\r\n--myboundary\r\n");
 	strcat(cabhttp,"Content-Type: image/jpeg\r\nContent-Length: ");
 
-	jpg = nextFramePush(&jpglen);
+    while(state[0] != STREAMING ){}
 
-	if (!jpg)
-	{
-		write(clisock , "HTTP/1.0 404 NotFound\r\n\r\n" , 25);
-		close(clisock);
-		return;
-	}
+    while(!jpg)
+        jpg = nextFramePush(&jpglen);
 
 	sprintf(resp, "%s%u\r\n\r\n",cabhttp, jpglen);
 
@@ -73,7 +68,7 @@ void JPG_stream2Client(int clisock, states *state, int *frames)
 
 	state[0] = PAUSED;
 	close(clisock);
-	printf("Pausing client %d\n", clisock);
+	//printf("Pausing client %d\n", clisock);
 }
 
 std::string _getRequest(char *client_get)
@@ -96,7 +91,7 @@ int JPGPusher::init(int porta)
     {
         printf("Could not create socket");
     }
-    puts("Socket created");
+    //puts("Socket created");
 
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
@@ -139,9 +134,9 @@ int JPGPusher::init(int porta)
 			client_get[read_size] = '\0';
 			break;
 		}
-
+        //LOGINFO("Request %s\n", client_get);
         req = _getRequest(client_get);
-
+        //LOGINFO("Req %s\n", req.c_str());
         if (req == "stream")
         	this->setNewSid(sockcli);
         else if(req.size() == 15)
@@ -168,7 +163,7 @@ void JPGPusher::setNewSid(int sockcli)
 	{
 		write(sockcli,"HTTP/1.0 403 Forbidden\r\n\r\n",26);
 		close(sockcli);
-		printf("No more clients accepted\n");
+		//printf("No more clients accepted\n");
 		return;
 	}
 
@@ -177,7 +172,7 @@ void JPGPusher::setNewSid(int sockcli)
 	ssn = (jpgsession*) malloc(sizeof(jpgsession));
 	ssn->sockcli = sockcli;
 	ssn->state = PAUSED;
-	ssn->frames = 60;
+	ssn->frames = 200;
 	ssn->ts = time(NULL);
 
 	this->sids[sid] = ssn;
@@ -186,7 +181,7 @@ void JPGPusher::setNewSid(int sockcli)
 	response += "\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\n";
 	response += sid;
 	write(sockcli,response.c_str(),response.size());
-	printf("New client created %s\n", sid);
+	//LOGINFO("New client created %s\n", sid);
 }
 
 void JPGPusher::checkSids()
@@ -199,9 +194,9 @@ void JPGPusher::checkSids()
 		std::string s = it->first;
 	    if (this->sids[s]->state == PAUSED)
 	    {
-	    	if (t - this->sids[s]->ts > 120)//2min then delete old sid registers
+	    	if (t - this->sids[s]->ts > 5)//5 secs then delete old sid registers
 	    	{
-	    		printf("Deleting sid %s\n", s.c_str());
+	    		//printf("Deleting sid %s\n", s.c_str());
 	    		free(this->sids[s]);
 	    		this->sids.erase(s);
 	    	}
@@ -220,20 +215,24 @@ void JPGPusher::handleSid(std::string sid, int sockcli)
 	{
 		ssn = this->sids[sid];
 
+		//LOGINFO("SID handle %p\n", ssn);
+
 		if (ssn->state == STREAMING && ssn->frames)//If streaming then continue streaming
 		{
-			ssn->frames = 60;
+			ssn->frames = 200;
 			write(sockcli,"HTTP/1.0 200 OK\r\n\r\n",19);
 			close(sockcli);
-			printf("Renew %s\n",sid.c_str());
+			//printf("Renew %s\n",sid.c_str());
 			return;
 		}
 		//if not streaming then begin to
 		ssn->sockcli = sockcli;
+		ssn->state = WAIT;
+		std::thread worker(JPG_stream2Client,ssn->sockcli, &(ssn->state), &(ssn->frames));
+		worker.detach();
+		//ssn->worker = worker;
 		ssn->state = STREAMING;
-		ssn->worker = std::thread(JPG_stream2Client, ssn->sockcli, &(ssn->state), &(ssn->frames));
-		ssn->worker.detach();
-		printf("Restream %s\n",sid.c_str());
+		//printf("Restream %s\n",sid.c_str());
 	}
 	else//invalid sid
 	{

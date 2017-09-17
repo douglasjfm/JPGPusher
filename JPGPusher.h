@@ -19,7 +19,8 @@ typedef unsigned char uchar;
 
 enum states{
 	PAUSED,
-	STREAMING
+	STREAMING,
+	WAIT
 };
 
 typedef struct jpgsession
