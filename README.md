@@ -84,7 +84,7 @@ The client would only need to set a HTML img tag for see the stream:
 <img src="http://localhost:12340/stream"/>
 ```
 
-But a bit more of logic mus be added in order to the server "knows" when to stop streaming. Follows a simple, but complete, example for a front end client:
+But a bit more of logic must be added in order to the server "knows" when to stop streaming. The following is a complete example for a front end client:
 
 ```html
 <!DOCTYPE html>
