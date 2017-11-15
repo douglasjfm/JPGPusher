@@ -105,7 +105,7 @@ function keep_playing(url)
 
 function init()
 {
-	$('#tela').load("http://localhost:12340/stream", function(response, status, xhr){
+	$('#screen').load("http://localhost:12340/stream", function(response, status, xhr){
 		$('#screen').attr('src',"http://localhost:12340/" + response);// Response is the Seesion ID
 		keep_playing("http://localhost:12340/"+response);
 	});
