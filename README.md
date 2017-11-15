@@ -126,3 +126,6 @@ This front end is already tested in firefox and chrome.
 
 The code only depends on c++11 and standard posix socket libs.
 
+# ACK
+
+This project uses "jpge.cpp - C++ class for JPEG compression" provided here https://github.com/richgel999/jpeg-compressor. Thanks to @richgel1999.
