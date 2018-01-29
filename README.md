@@ -28,7 +28,7 @@ Where size must retrieve the size os the jpg frame and the return pointer is the
 
 ## Example using OPENCV
 
-This example show how to stream the webcam using JPGPusher:
+This example shows how to stream the webcam using JPGPusher:
 
 ```c++
 #include <string.h> // memcpy
@@ -60,31 +60,31 @@ uchar* frame_provider_function(unsigned *size)
 int main(void)
 {
 	JPGPusher server_jpg(frame_provider_function);
-	bool run = true;
+	bool runnig = true;
 	char c;
 	cv::VideoCapture cap(0);
 
 	server_jpg.start(12340);
 
-	while (run)
+	while (runnig)
 	{
 		cap >> cv_frame;
 		cv::imshow("cv",cv_frame);
 		c = cv::waitKey(1);
-		run = c != 27;//Stop if ESC pressed
+		runnig = c != 27;//Stop if ESC pressed
 	}
 	server_jpg.finish();
 	return 0;
 }
 ```
 
-The client would only need to set a HTML img tag for see the stream:
+The client can set a HTML img tag to see the stream:
 
 ```html
 <img src="http://localhost:12340/stream"/>
 ```
 
-But a bit more of logic must be added in order to the server "knows" when to stop streaming. The following is a complete example for a front end client:
+A bit more of logic must be added in order to the server "knows" when to stop streaming. The following is a complete example for a front end client:
 
 ```html
 <!DOCTYPE html>
