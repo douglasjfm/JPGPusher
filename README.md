@@ -1,4 +1,4 @@
-# Simple C++ HTTP Pusher server
+# Simple C++ HTTP Push server
 
 HTTP push server implentation for MJPG.
 
