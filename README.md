@@ -4,7 +4,7 @@ HTTP Server push implentation for MJPG (jpeg streaming).
 
 ## Usage
 
-This sample show how to stream
+The following code sample shows how to stream:
 
 ```c++
 #include "JPGPusher.h"
@@ -12,9 +12,9 @@ This sample show how to stream
 int main(void)
 {
 	JPGPusher server_jpg(frame_provider_function);
-	server_jpg.start(12340);
+	server_jpg.start(12340); // start http streaming on port 12340
 	//...
-	servjpg.finish();
+	servjpg.finish(); // finish server
 	return 0;
 }
 ```
@@ -24,9 +24,9 @@ The JPGPusher class takes a function for providing the frames. frame_provider_fu
 unsigned char* frame_provider_function(unsigned int *size)
 ```
 
-Where size must retrieve the size os the jpg frame and the return pointer is the frame data itself. At this example the server runs at port 12340. IMPORTANT: this function must also keep the logic for the stream FPS.
+Where size must retrieve the size os the jpg frame and the return pointer is the frame data itself. At this example the server runs at port 12340. IMPORTANT: this function is blocking, so it keeps the logic for the stream FPS.
 
-## Example using OPENCV
+## Sample code using OPENCV
 
 This example shows how to stream the webcam using JPGPusher:
 
@@ -40,6 +40,12 @@ This example shows how to stream the webcam using JPGPusher:
 
 cv::Mat cv_frame;
 
+/*
+* Description: Will provide the jpeg encoded frames
+*              opencv will be storing on the global Mat cv_frame;
+* Output:      size - For storing the frame data length (in bytes)
+* Return:      The function will return a pointer to the current jpg encoded frame data
+*/
 uchar* frame_provider_function(unsigned *size)
 {
 	std::vector<unsigned char> buffer;
@@ -53,7 +59,7 @@ uchar* frame_provider_function(unsigned *size)
 	memcpy(ret, buffer.data(), size[0]);
 	buffer.clear();
 	jpgparams.clear();
-	cv::waitKey(67);//FPS 15
+	cv::waitKey(67); // 15 frames per second
 	return ret; //JPGPusher will free after.
 }
 
@@ -125,7 +131,3 @@ This front end is already tested in firefox and chrome.
 ## Dependencies
 
 The code only depends on c++11 and standard posix socket libs.
-
-## ACK
-
-This project uses "jpge.cpp - C++ class for JPEG compression" provided here https://github.com/richgel999/jpeg-compressor. Thanks to @richgel999.
