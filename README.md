@@ -1,6 +1,6 @@
-# Simple C++ HTTP Push server
+# Simple C++ HTTP Server Push
 
-HTTP push server implentation for MJPG.
+HTTP Server push implentation for MJPG (jpeg streaming).
 
 ## Usage
 
