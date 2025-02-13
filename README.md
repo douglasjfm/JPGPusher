@@ -28,7 +28,7 @@ Where size must retrieve the size os the jpg frame and the return pointer is the
 
 ## Sample code using OPENCV
 
-This example shows how to stream the webcam using JPGPusher:
+This example shows how to stream the webcam over http using JPGPusher:
 
 ```c++
 #include <string.h> // memcpy
